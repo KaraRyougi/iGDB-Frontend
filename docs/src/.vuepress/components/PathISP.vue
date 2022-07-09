@@ -11,7 +11,7 @@
       />
     </template>
   </v-select>
-  <input type="submit"/>
+  <input type="submit" value="Plot"/>
 </form>
 <div ref="map" class="map"></div>
 </div>
@@ -23,6 +23,7 @@ import { Map, View } from 'ol'
 import { Style, Stroke } from 'ol/style'
 import { OSM, Vector as VectorSource } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
+import { FullScreen, defaults as defaultControls } from 'ol/control';
 import GeoJSON from 'ol/format/GeoJSON'
 import smooth from 'chaikin-smooth'
 
@@ -74,6 +75,7 @@ export default {
   mounted() {
     const vectorLayer = new VectorLayer({})
     this.map = new Map({
+      controls: defaultControls().extend([new FullScreen()]),
       target: this.$refs['map'],
       layers: [
         new TileLayer({
@@ -84,7 +86,7 @@ export default {
       view: new View({
           zoom: 0,
           center: [0, 0],
-          constrainResolution: true
+          constrainResolution: false,
       }),
     })
   }

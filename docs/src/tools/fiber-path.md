@@ -1,3 +1,3 @@
-Search for a ISP to view its global fiber paths.
+Search for ISP name to view the physical network paths.
 
 <PathISP />
