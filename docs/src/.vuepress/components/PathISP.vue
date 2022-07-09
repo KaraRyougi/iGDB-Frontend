@@ -88,7 +88,6 @@ export default {
           constrainResolution: true
       }),
     })
-    window.map = this.map
   }
 }
 </script>
