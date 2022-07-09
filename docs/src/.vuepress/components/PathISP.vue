@@ -1,7 +1,7 @@
 <template>
 <div>
 <form @submit.prevent="onSubmit">
-  <v-select label="corpName" :options="isp" v-model="selected">
+  <v-select label="corpName" :options="isp" v-model="selected" multiple>
     <template #search="{ attributes, events }">
       <input
         :required="!selected"
@@ -20,7 +20,7 @@
 <script>
 import isp from '../data/isp'
 import { Map, View } from 'ol'
-import { Style, Stroke } from 'ol/style'
+import { Style, Stroke, Text } from 'ol/style'
 import { OSM, Vector as VectorSource } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
 import { FullScreen, defaults as defaultControls } from 'ol/control';
@@ -48,32 +48,28 @@ export default {
     isp,
     selected: null,
     map: null,
+    vectorLayer: null
   }),
   methods: {
     async onSubmit() {
-      let geojsonObject = null
-
-      const selectedISP = this.selected.corpName
-      try {
-        const response = await fetch(`/isp-paths/${selectedISP}.json`)
-        geojsonObject = await response.json()
-      } catch (ex) {
-        console.error(ex)
+      const vectorSource = new VectorSource({})
+      for (const element of this.selected) {
+        let geojsonObject = null
+        const selectedISP = element.corpName
+        try {
+          const response = await fetch(`/isp-paths/${selectedISP}.json`)
+          geojsonObject = await response.json()
+        } catch (ex) {
+          console.error(ex)
+        }
+        const geoFeatures = new GeoJSON().readFeatures(geojsonObject, { featureProjection: 'EPSG:3857' })
+        geoFeatures.forEach(feature => vectorSource.addFeature(feature))
       }
-
-      const geoFeatures = new GeoJSON().readFeatures(geojsonObject, { featureProjection: 'EPSG:3857' })
-      const vectorSource = new VectorSource({
-        features: geoFeatures
-      })
-      const vectorLayer = new VectorLayer({
-        source: vectorSource,
-        style: styleFunction,
-      })
-      this.map.getLayers().setAt(1, vectorLayer)
+      this.vectorLayer.setSource(vectorSource)
     },
   },
   mounted() {
-    const vectorLayer = new VectorLayer({})
+    this.vectorLayer = new VectorLayer({style: styleFunction})
     this.map = new Map({
       controls: defaultControls().extend([new FullScreen()]),
       target: this.$refs['map'],
@@ -81,7 +77,7 @@ export default {
         new TileLayer({
           source: new OSM()
           }),
-        vectorLayer
+        this.vectorLayer
       ],
       view: new View({
           zoom: 0,
