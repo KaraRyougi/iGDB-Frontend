@@ -1,7 +1,7 @@
 <template>
 <div>
 <form @submit.prevent="onSubmit">
-  <v-select label="corpName" :options="isp" v-model="selected" multiple>
+  <v-select label="corpName" :options="isp" v-model="selected">
     <template #search="{ attributes, events }">
       <input
         :required="!selected"
@@ -46,12 +46,13 @@ export default {
   data: () => ({
     isp,
     selected: null,
+    map: null,
   }),
   methods: {
     async onSubmit() {
       let geojsonObject = null
 
-      const selectedISP = this.selected[0].corpName
+      const selectedISP = this.selected.corpName
       try {
         const response = await fetch(`/isp-paths/${selectedISP}.json`)
         geojsonObject = await response.json()
@@ -67,24 +68,27 @@ export default {
         source: vectorSource,
         style: styleFunction,
       })
+      map.getLayers().setAt(1, vectorLayer)
+      this.map.updateSize()
     },
   },
   mounted() {
     const vectorLayer = new VectorLayer({})
-    new Map({
-    target: this.$refs['map'],
-    layers: [
+    this.map = new Map({
+      target: this.$refs['map'],
+      layers: [
         new TileLayer({
-        source: new OSM()
-        }),
+          source: new OSM()
+          }),
         vectorLayer
-    ],
-    view: new View({
-        zoom: 0,
-        center: [0, 0],
-        constrainResolution: true
-    }),
+      ],
+      view: new View({
+          zoom: 0,
+          center: [0, 0],
+          constrainResolution: true
+      }),
     })
+    window.map = this.map
   }
 }
 </script>
