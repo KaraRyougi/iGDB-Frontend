@@ -1,7 +1,7 @@
 <template>
 <div>
-<form @submit.stop="onSubmit">
-  <v-select label="corpName" :options="isp" v-model="selected">
+<form @submit.prevent="onSubmit">
+  <v-select label="corpName" :options="isp" v-model="selected" multiple>
     <template #search="{ attributes, events }">
       <input
         :required="!selected"
@@ -49,12 +49,21 @@ export default {
   }),
   methods: {
     async onSubmit() {
-      const geojsonObject = await import('../data/isp-paths/TATA.json')
+      let geojsonObject = null
+
+      const selectedISP = this.selected[0].corpName
+      try {
+        const response = await fetch(`/isp-paths/${selectedISP}.json`)
+        geojsonObject = await response.json()
+      } catch (ex) {
+        console.error(ex)
+      }
+
       const geoFeatures = new GeoJSON().readFeatures(geojsonObject, { featureProjection: 'EPSG:3857' })
       const vectorSource = new VectorSource({
         features: geoFeatures
       })
-      vectorLayer = new VectorLayer({
+      const vectorLayer = new VectorLayer({
         source: vectorSource,
         style: styleFunction,
       })
