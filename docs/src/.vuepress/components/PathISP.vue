@@ -68,8 +68,7 @@ export default {
         source: vectorSource,
         style: styleFunction,
       })
-      map.getLayers().setAt(1, vectorLayer)
-      this.map.updateSize()
+      this.map.getLayers().setAt(1, vectorLayer)
     },
   },
   mounted() {
