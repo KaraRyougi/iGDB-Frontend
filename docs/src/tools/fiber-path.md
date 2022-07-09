@@ -1,3 +1,3 @@
-Search for ISP name to view the physical network paths.
+Search for ISP name to view physical road routes between its PoPs.
 
 <PathISP />
