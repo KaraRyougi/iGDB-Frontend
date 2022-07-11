@@ -19,28 +19,36 @@
 
 <script>
 import isp from '../data/isp'
-import { Map, View } from 'ol'
+import { Map, View, Collection } from 'ol'
 import { Style, Stroke, Text } from 'ol/style'
 import { OSM, Vector as VectorSource } from 'ol/source'
-import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer'
-import { FullScreen, defaults as defaultControls } from 'ol/control';
+import { Tile as TileLayer, Vector as VectorLayer, Group as LayerGroup } from 'ol/layer'
+import { Control, FullScreen, defaults as defaultControls, ScaleLine } from 'ol/control';
 import GeoJSON from 'ol/format/GeoJSON'
 import smooth from 'chaikin-smooth'
 
-const styles = {
-    'LineString': [
-    new Style({
-        stroke: new Stroke({
-        color: '#1565C0',
-        width: 2,
-        zIndex: 0,
-        }),
-    }),
-    ]
+const colorPalette = ["#f44336","#2196f3","#00bcd4","#ff9800","#e91e63","#8bc34a"]
+
+const addAlpha = function(color, opacity) {
+    const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255);
+    return color + _opacity.toString(16).toUpperCase();
 }
 
-const styleFunction = function (feature) {
-    return styles[feature.getGeometry().getType()]
+const getRandomStyle = function (index) {
+  return new Style({stroke: new Stroke({
+    color: addAlpha(colorPalette[index], 0.55),
+    width: 2,
+  })})
+}
+
+class ColorLegend extends Control {
+  constructor() {
+    const element = document.createElement('div')
+    super({
+      element: element,
+    })
+  }
+
 }
 
 export default {
@@ -48,11 +56,15 @@ export default {
     isp,
     selected: null,
     map: null,
-    vectorLayer: null
+    // vectorLayer: null,
+    layerGroup: null,
+    colorLeged: null,
   }),
   methods: {
     async onSubmit() {
-      const vectorSource = new VectorSource({})
+      var index = 0
+      const layerCollection = new Collection()
+      
       for (const element of this.selected) {
         let geojsonObject = null
         const selectedISP = element.corpName
@@ -63,21 +75,33 @@ export default {
           console.error(ex)
         }
         const geoFeatures = new GeoJSON().readFeatures(geojsonObject, { featureProjection: 'EPSG:3857' })
+        const vectorSource = new VectorSource()
         geoFeatures.forEach(feature => vectorSource.addFeature(feature))
+        const vectorLayer = new VectorLayer({
+          source: vectorSource,
+          style: getRandomStyle(index++)
+        })
+        layerCollection.push(vectorLayer)
       }
-      this.vectorLayer.setSource(vectorSource)
+      this.layerGroup.setLayers(layerCollection)
     },
   },
   mounted() {
-    this.vectorLayer = new VectorLayer({style: styleFunction})
+    this.layerGroup = new LayerGroup()
+    this.colorLegend = new ColorLegend()
     this.map = new Map({
-      controls: defaultControls().extend([new FullScreen()]),
+      controls: defaultControls().extend([
+        new FullScreen(),
+        new ScaleLine(),
+        this.colorLegend,
+      ]),
       target: this.$refs['map'],
       layers: [
         new TileLayer({
+          className: 'bw',
           source: new OSM()
           }),
-        this.vectorLayer
+        this.layerGroup,
       ],
       view: new View({
           zoom: 0,
@@ -112,5 +136,13 @@ input[type='submit'] {
   height: 500px;
   padding-top: 1.5rem;
   width: 100%;
+}
+
+</style>
+
+<style>
+.bw {
+  filter: grayscale(75%);
+  /* filter: opacity(50%); */
 }
 </style>
