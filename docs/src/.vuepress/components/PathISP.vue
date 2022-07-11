@@ -1,9 +1,9 @@
 <!-- TODO:
 Show color legend label (bad readability, cancelled)
-Select / highlight path and show label
+Select / highlight path and show label (75% done)
+Click & Keep
 'Plotting...' text while fetching JSON
 Customizing color
-Show path segments
 Toggle PoP display -->
 
 <template>
@@ -35,16 +35,16 @@ import { Control, FullScreen, defaults as defaultControls, ScaleLine } from 'ol/
 import GeoJSON from 'ol/format/GeoJSON'
 import smooth from 'chaikin-smooth'
 
-const colorPalette = ["#f44336","#2196f3","#00bcd4","#ff9800","#e91e63","#8bc34a"]
+const colorPalette = ["#f44336","#2196f3","#ff9800","#e91e63","#8bc34a"]
 
-const addAlpha = function(color, opacity) {
+const setAlpha = function(color, opacity) {
     const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255)
-    return color + _opacity.toString(16).toUpperCase()
+    return color.substring(0,7) + _opacity.toString(16).toUpperCase()
 }
 
 const getRandomStyle = function (index) {
   return new Style({stroke: new Stroke({
-    color: addAlpha(colorPalette[index], 0.55),
+    color: setAlpha(colorPalette[index], 0.55),
     width: 2,
   })})
 }
@@ -59,7 +59,7 @@ export default {
     selectedIsp: null,
     map: null,
     vectorLayer: null,
-    // selectedPath: null,
+    highlightedOrg: null,
   }),
 
   methods: {
@@ -87,7 +87,7 @@ export default {
   },
 
   mounted() {
-    // this.selectedPath = null
+    this.highlightedOrg = null
     this.vectorLayer = new VectorLayer()
 
     this.map = new Map({
@@ -111,15 +111,43 @@ export default {
     })
 
     this.map.on('pointermove', (event) => {
-      // if (this.selectedPath != null) {
-      //   this.selectedPath == null
-      // }
-      this.map.forEachFeatureAtPixel(
-        event.pixel,
-        (feature) => {
-          console.log(feature.get('ORG'))
+      if (this.highlightedOrg != null) {
+        for (const path of this.vectorLayer.getSource().getFeatures()) {
+          if (path.get('ORG') == this.highlightedOrg) {
+            const oldColor = path.getStyle().getStroke().getColor()
+            const newStyle = new Style({
+              stroke: new Stroke({
+              color: setAlpha(oldColor, 0.5),
+              width: 1.5,
+            })})
+            path.setStyle(newStyle)
+          }
         }
+        this.highlightedOrg == null
+      }
+
+      const hovered = this.map.forEachFeatureAtPixel(
+        event.pixel,
+        (feature) => feature
       )
+
+      if (hovered) {
+        const org = hovered.get('ORG')
+        this.highlightedOrg = org
+        for (const path of this.vectorLayer.getSource().getFeatures()) {
+          if (path.get('ORG') == org) {
+            const oldColor = path.getStyle().getStroke().getColor()
+            const newStyle = new Style({
+              stroke: new Stroke({
+                color: setAlpha(oldColor, 0.9),
+                width: 3,
+              }),
+              zIndex: 100
+            })
+            path.setStyle(newStyle)
+          }
+        }
+      }
     })
   }
 }
