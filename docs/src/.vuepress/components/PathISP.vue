@@ -1,7 +1,7 @@
 <!-- TODO:
-Show color legend label (bad readability, cancelled)
-Select / highlight path and show label (75% done)
-Click & Keep
+Show color legend labels (bad readability, cancelled)
+Select / highlight path and show label (85% done)
+Click & Keep (Pin Path)
 'Plotting...' text while fetching JSON
 Customizing color
 Toggle PoP display -->
@@ -21,6 +21,7 @@ Toggle PoP display -->
   </v-select>
   <input type="submit" value="Plot"/>
 </form>
+<div id="tooltip"></div>
 <div ref="map" class="map"></div>
 </div>
 </template>
@@ -117,9 +118,11 @@ export default {
             const oldColor = path.getStyle().getStroke().getColor()
             const newStyle = new Style({
               stroke: new Stroke({
-              color: setAlpha(oldColor, 0.5),
-              width: 1.5,
-            })})
+                color: setAlpha(oldColor, 0.5),
+                width: 1.5,
+              }),
+              zIndex: 0
+            })
             path.setStyle(newStyle)
           }
         }
@@ -128,7 +131,8 @@ export default {
 
       const hovered = this.map.forEachFeatureAtPixel(
         event.pixel,
-        (feature) => feature
+        (feature) => feature,
+        { hitTolerance: 5 },
       )
 
       if (hovered) {
@@ -137,9 +141,10 @@ export default {
         for (const path of this.vectorLayer.getSource().getFeatures()) {
           if (path.get('ORG') == org) {
             const oldColor = path.getStyle().getStroke().getColor()
+            const newColor = setAlpha(oldColor, 0.9)
             const newStyle = new Style({
               stroke: new Stroke({
-                color: setAlpha(oldColor, 0.9),
+                color: newColor,
                 width: 3,
               }),
               zIndex: 100
@@ -186,4 +191,13 @@ input[type='submit'] {
   /* filter: opacity(50%); */
 }
 
+/* #tooltip
+{
+  position:absolute;
+  background:white;
+  z-Index:1000;
+  padding:5px;
+  border-radius:5px;
+  border: 1px solid grey;
+} */
 </style>
