@@ -1,3 +1,10 @@
+<!-- TODO:
+Show color legend label???
+Select path / highlight
+'Plotting...' text while fetching JSON
+Customized color
+Toggle PoP display -->
+
 <template>
 <div>
 <form @submit.prevent="onSubmit">
@@ -44,9 +51,18 @@ const getRandomStyle = function (index) {
 class ColorLegend extends Control {
   constructor() {
     const element = document.createElement('div')
+    element.setAttribute('id', 'colorLegend')
     super({
       element: element,
     })
+  }
+
+  add(text, color) {
+    this.element.innerHTML += `<div style="color:${color};">${text}</div>`
+  }
+
+  clear() {
+    this.element.innerHTML = ''
   }
 
 }
@@ -58,10 +74,11 @@ export default {
     map: null,
     // vectorLayer: null,
     layerGroup: null,
-    colorLeged: null,
+    // colorLeged: null,
   }),
   methods: {
     async onSubmit() {
+      // this.colorLegend.clear()
       var index = 0
       const layerCollection = new Collection()
       
@@ -79,16 +96,18 @@ export default {
         geoFeatures.forEach(feature => vectorSource.addFeature(feature))
         const vectorLayer = new VectorLayer({
           source: vectorSource,
-          style: getRandomStyle(index++)
+          style: getRandomStyle(index)
         })
+        // this.colorLegend.add(selectedISP, addAlpha(colorPalette[index], 0.8))
         layerCollection.push(vectorLayer)
+        index++
       }
       this.layerGroup.setLayers(layerCollection)
     },
   },
   mounted() {
     this.layerGroup = new LayerGroup()
-    this.colorLegend = new ColorLegend()
+    // this.colorLegend = new ColorLegend()
     this.map = new Map({
       controls: defaultControls().extend([
         new FullScreen(),
@@ -145,4 +164,5 @@ input[type='submit'] {
   filter: grayscale(75%);
   /* filter: opacity(50%); */
 }
+
 </style>
