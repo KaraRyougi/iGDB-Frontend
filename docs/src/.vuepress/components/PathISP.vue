@@ -1,17 +1,18 @@
 <!-- TODO:
-Show color legend label???
-Select path / highlight
+Show color legend label (bad readability, cancelled)
+Select / highlight path and show label
 'Plotting...' text while fetching JSON
-Customized color
+Customizing color
+Show path segments
 Toggle PoP display -->
 
 <template>
 <div>
 <form @submit.prevent="onSubmit">
-  <v-select label="corpName" :options="isp" v-model="selected" multiple>
+  <v-select label="corpName" :options="isp" v-model="selectedIsp" multiple>
     <template #search="{ attributes, events }">
       <input
-        :required="!selected"
+        :required="!selectedIsp"
         class="vs__search"
         v-bind="attributes"
         v-on="events"
@@ -30,15 +31,15 @@ import { Map, View, Collection } from 'ol'
 import { Style, Stroke, Text } from 'ol/style'
 import { OSM, Vector as VectorSource } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer, Group as LayerGroup } from 'ol/layer'
-import { Control, FullScreen, defaults as defaultControls, ScaleLine } from 'ol/control';
+import { Control, FullScreen, defaults as defaultControls, ScaleLine } from 'ol/control'
 import GeoJSON from 'ol/format/GeoJSON'
 import smooth from 'chaikin-smooth'
 
 const colorPalette = ["#f44336","#2196f3","#00bcd4","#ff9800","#e91e63","#8bc34a"]
 
 const addAlpha = function(color, opacity) {
-    const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255);
-    return color + _opacity.toString(16).toUpperCase();
+    const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255)
+    return color + _opacity.toString(16).toUpperCase()
 }
 
 const getRandomStyle = function (index) {
@@ -48,71 +49,51 @@ const getRandomStyle = function (index) {
   })})
 }
 
-class ColorLegend extends Control {
-  constructor() {
-    const element = document.createElement('div')
-    element.setAttribute('id', 'colorLegend')
-    super({
-      element: element,
-    })
-  }
-
-  add(text, color) {
-    this.element.innerHTML += `<div style="color:${color};">${text}</div>`
-  }
-
-  clear() {
-    this.element.innerHTML = ''
-  }
-
-}
-
 export default {
+  name: 'MapContainer',
+  components: {},
+  props: {},
+  
   data: () => ({
     isp,
-    selected: null,
+    selectedIsp: null,
     map: null,
-    // vectorLayer: null,
-    layerGroup: null,
-    // colorLeged: null,
+    vectorLayer: null,
+    // selectedPath: null,
   }),
+
   methods: {
     async onSubmit() {
-      // this.colorLegend.clear()
-      var index = 0
-      const layerCollection = new Collection()
-      
-      for (const element of this.selected) {
+      let index = 0
+      const vectorSource = new VectorSource({})
+      for (const element of this.selectedIsp) {
         let geojsonObject = null
-        const selectedISP = element.corpName
+        const selection = element.corpName
         try {
-          const response = await fetch(`/isp-paths/${selectedISP}.json`)
+          const response = await fetch(`/isp-paths/${selection}.json`)
           geojsonObject = await response.json()
         } catch (ex) {
           console.error(ex)
         }
         const geoFeatures = new GeoJSON().readFeatures(geojsonObject, { featureProjection: 'EPSG:3857' })
-        const vectorSource = new VectorSource()
-        geoFeatures.forEach(feature => vectorSource.addFeature(feature))
-        const vectorLayer = new VectorLayer({
-          source: vectorSource,
-          style: getRandomStyle(index)
+        geoFeatures.forEach(feature => {
+          feature.setStyle(getRandomStyle(index))
+          vectorSource.addFeature(feature)
         })
-        // this.colorLegend.add(selectedISP, addAlpha(colorPalette[index], 0.8))
-        layerCollection.push(vectorLayer)
         index++
       }
-      this.layerGroup.setLayers(layerCollection)
+      this.vectorLayer.setSource(vectorSource)
     },
   },
+
   mounted() {
-    this.layerGroup = new LayerGroup()
-    // this.colorLegend = new ColorLegend()
+    // this.selectedPath = null
+    this.vectorLayer = new VectorLayer()
+
     this.map = new Map({
       controls: defaultControls().extend([
         new FullScreen(),
         new ScaleLine(),
-        this.colorLegend,
       ]),
       target: this.$refs['map'],
       layers: [
@@ -120,13 +101,25 @@ export default {
           className: 'bw',
           source: new OSM()
           }),
-        this.layerGroup,
+        this.vectorLayer,
       ],
       view: new View({
           zoom: 0,
           center: [0, 0],
           constrainResolution: false,
       }),
+    })
+
+    this.map.on('pointermove', (event) => {
+      // if (this.selectedPath != null) {
+      //   this.selectedPath == null
+      // }
+      this.map.forEachFeatureAtPixel(
+        event.pixel,
+        (feature) => {
+          console.log(feature.getProperties())
+        }
+      )
     })
   }
 }
