@@ -117,7 +117,7 @@ export default {
       this.map.forEachFeatureAtPixel(
         event.pixel,
         (feature) => {
-          console.log(feature.getProperties())
+          console.log(feature.get('ORG'))
         }
       )
     })
