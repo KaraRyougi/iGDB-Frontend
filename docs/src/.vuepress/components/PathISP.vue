@@ -44,16 +44,16 @@ const colorPalette = [
 "#03a9f4",
 "#4caf50",
 "#e91e63",
-"#ff5722",
+"#3f51b5",
 "#9c27b0",
 "#009688",
 "#ffc107",
 "#673ab7",
 "#ff4081",
-"#3f51b5",
 "#2196f3",
 "#8bc34a",
 "#607d8b",
+"#ff5722",
 "#cddc39",
 "#00bcd4",
 "#ffeb3b",
@@ -170,7 +170,7 @@ export default {
                 const newStyle = new Style({
                   stroke: new Stroke({
                     color: newColor,
-                    width: 2,
+                    width: 1.5,
                   }),
                   zIndex: 0,
                 })
@@ -181,7 +181,7 @@ export default {
                 const newStyle = new Style({
                   stroke: new Stroke({
                     color: newColor,
-                    width: 3,
+                    width: 2.5,
                   }),
                   zIndex: 1000,
                 })
@@ -198,7 +198,7 @@ export default {
               const newStyle = new Style({
                 stroke: new Stroke({
                   color: newColor,
-                  width: 3,
+                  width: 2.5,
                 }),
                 zIndex: 1000,
               })

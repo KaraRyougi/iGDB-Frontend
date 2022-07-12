@@ -2,4 +2,4 @@
 
 Visualizing network PoP (Point of Presence) and possible physical network paths of an organization.
 
-The site is currently hosted at <https://igdb.apernet.io>.
+The site is currently hosted at <https://igdb.github.io>.
