@@ -21,8 +21,10 @@ Toggle PoP display -->
   </v-select>
   <input type="submit" value="Plot"/>
 </form>
-<div id="tooltip"></div>
-<div ref="map" class="map"></div>
+
+<div ref="map" class="map">
+  <div id="tooltip" style="display:none;"></div>
+</div>
 </div>
 </template>
 
@@ -46,7 +48,7 @@ const setAlpha = function(color, opacity) {
 const getRandomStyle = function (index) {
   return new Style({stroke: new Stroke({
     color: setAlpha(colorPalette[index], 0.55),
-    width: 2,
+    width: 1.5,
   })})
 }
 
@@ -112,46 +114,90 @@ export default {
     })
 
     this.map.on('pointermove', (event) => {
-      if (this.highlightedOrg != null) {
-        for (const path of this.vectorLayer.getSource().getFeatures()) {
-          if (path.get('ORG') == this.highlightedOrg) {
-            const oldColor = path.getStyle().getStroke().getColor()
-            const newStyle = new Style({
-              stroke: new Stroke({
-                color: setAlpha(oldColor, 0.5),
-                width: 1.5,
-              }),
-              zIndex: 0
-            })
-            path.setStyle(newStyle)
-          }
-        }
-        this.highlightedOrg == null
-      }
 
       const hovered = this.map.forEachFeatureAtPixel(
         event.pixel,
         (feature) => feature,
-        { hitTolerance: 5 },
+        { hitTolerance: 4 },
       )
 
+      const tooltip = document.getElementById('tooltip')
+
       if (hovered) {
-        const org = hovered.get('ORG')
-        this.highlightedOrg = org
-        for (const path of this.vectorLayer.getSource().getFeatures()) {
-          if (path.get('ORG') == org) {
-            const oldColor = path.getStyle().getStroke().getColor()
-            const newColor = setAlpha(oldColor, 0.9)
-            const newStyle = new Style({
-              stroke: new Stroke({
-                color: newColor,
-                width: 3,
-              }),
-              zIndex: 100
-            })
-            path.setStyle(newStyle)
+        const oldOrg = this.highlightedOrg
+        const newOrg = hovered.get('ORG')
+
+        if (oldOrg != null) {
+          if (oldOrg != newOrg) {
+            // recover old path style & draw new highlighted path
+            for (const path of this.vectorLayer.getSource().getFeatures()) {
+              if (path.get('ORG') == oldOrg) {
+                const oldColor = path.getStyle().getStroke().getColor()
+                const newColor = setAlpha(oldColor, 0.55)
+                const newStyle = new Style({
+                  stroke: new Stroke({
+                    color: newColor,
+                    width: 2,
+                  }),
+                  zIndex: 0,
+                })
+                path.setStyle(newStyle)
+              } else if (path.get('ORG') == newOrg) {
+                const oldColor = path.getStyle().getStroke().getColor()
+                const newColor = setAlpha(oldColor, 0.85)
+                const newStyle = new Style({
+                  stroke: new Stroke({
+                    color: newColor,
+                    width: 3,
+                  }),
+                  zIndex: 1000,
+                })
+                path.setStyle(newStyle)
+              }
+            }
+          }
+        } else {
+          // previous = null, current = some path, draw new highlighted path
+          for (const path of this.vectorLayer.getSource().getFeatures()) {
+            if (path.get('ORG') == newOrg) {
+              const oldColor = path.getStyle().getStroke().getColor()
+              const newColor = setAlpha(oldColor, 0.85)
+              const newStyle = new Style({
+                stroke: new Stroke({
+                  color: newColor,
+                  width: 3,
+                }),
+                zIndex: 1000,
+              })
+              path.setStyle(newStyle)
+            }
+          }
+          tooltip.style.display = 'block'
+        }
+        this.highlightedOrg = newOrg
+        tooltip.innerHTML = newOrg
+        tooltip.style.left = event.pixel[0] + 'px'
+        tooltip.style.top = event.pixel[1] + 'px'
+      } else {
+        if (this.highlightedOrg != null) {
+          // current = null, previous = some path, recover old path style
+          for (const path of this.vectorLayer.getSource().getFeatures()) {
+            if (path.get('ORG') == this.highlightedOrg) {
+              const oldColor = path.getStyle().getStroke().getColor()
+              const newColor = setAlpha(oldColor, 0.55)
+              const newStyle = new Style({
+                stroke: new Stroke({
+                  color: newColor,
+                  width: 1.5,
+                }),
+                zIndex: 0,
+              })
+              path.setStyle(newStyle)
+            }
           }
         }
+        this.highlightedOrg = null
+        tooltip.style.display = 'none'
       }
     })
   }
@@ -191,7 +237,7 @@ input[type='submit'] {
   /* filter: opacity(50%); */
 }
 
-/* #tooltip
+#tooltip
 {
   position:absolute;
   background:white;
@@ -199,5 +245,5 @@ input[type='submit'] {
   padding:5px;
   border-radius:5px;
   border: 1px solid grey;
-} */
+}
 </style>
