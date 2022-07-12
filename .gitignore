@@ -17,6 +17,7 @@ plots/
 
 # Distribution / packaging
 .Python
+dist/
 build/
 develop-eggs/
 downloads/
