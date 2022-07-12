@@ -1,9 +1,9 @@
 <!-- TODO:
 Show color legend labels (bad readability, cancelled)
-Select / highlight path and show label (85% done)
+Select / highlight path and show label (99% done)
 Click & Keep (Pin Path)
 'Plotting...' text while fetching JSON
-Customizing color
+Customizing color (really?)
 Toggle PoP display -->
 
 <template>
@@ -23,7 +23,7 @@ Toggle PoP display -->
 </form>
 
 <div ref="map" class="map">
-  <div id="tooltip" style="display:none;"></div>
+  <div id="tooltip"></div>
 </div>
 </div>
 </template>
@@ -35,10 +35,34 @@ import { Style, Stroke, Text } from 'ol/style'
 import { OSM, Vector as VectorSource } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer, Group as LayerGroup } from 'ol/layer'
 import { Control, FullScreen, defaults as defaultControls, ScaleLine } from 'ol/control'
+import Overlay from 'ol/Overlay'
 import GeoJSON from 'ol/format/GeoJSON'
 import smooth from 'chaikin-smooth'
 
-const colorPalette = ["#f44336","#2196f3","#ff9800","#e91e63","#8bc34a"]
+const colorPalette = [
+"#f44336",
+"#03a9f4",
+"#4caf50",
+"#e91e63",
+"#ff5722",
+"#9c27b0",
+"#009688",
+"#ffc107",
+"#673ab7",
+"#ff4081",
+"#3f51b5",
+"#2196f3",
+"#8bc34a",
+"#607d8b",
+"#cddc39",
+"#00bcd4",
+"#ffeb3b",
+"#ff1744",
+"#795548",
+"#ff9800",
+"#9e9e9e",
+"#d500f9"
+]
 
 const setAlpha = function(color, opacity) {
     const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255)
@@ -63,6 +87,7 @@ export default {
     map: null,
     vectorLayer: null,
     highlightedOrg: null,
+    overlay: null,
   }),
 
   methods: {
@@ -92,6 +117,11 @@ export default {
   mounted() {
     this.highlightedOrg = null
     this.vectorLayer = new VectorLayer()
+    this.overlay = new Overlay({
+      element: tooltip,
+      offset: [10, 0],
+      positioning: 'bottom-left'
+    })
 
     this.map = new Map({
       controls: defaultControls().extend([
@@ -106,6 +136,9 @@ export default {
           }),
         this.vectorLayer,
       ],
+      overlays: [
+        this.overlay,
+      ],
       view: new View({
           zoom: 0,
           center: [0, 0],
@@ -118,7 +151,7 @@ export default {
       const hovered = this.map.forEachFeatureAtPixel(
         event.pixel,
         (feature) => feature,
-        { hitTolerance: 4 },
+        { hitTolerance: 5 },
       )
 
       const tooltip = document.getElementById('tooltip')
@@ -172,12 +205,11 @@ export default {
               path.setStyle(newStyle)
             }
           }
-          tooltip.style.display = 'block'
+          tooltip.style.display = 'inline-block'
         }
         this.highlightedOrg = newOrg
         tooltip.innerHTML = newOrg
-        tooltip.style.left = event.pixel[0] + 'px'
-        tooltip.style.top = event.pixel[1] + 'px'
+        this.overlay.setPosition(event.coordinate)
       } else {
         if (this.highlightedOrg != null) {
           // current = null, previous = some path, recover old path style
@@ -197,6 +229,7 @@ export default {
           }
         }
         this.highlightedOrg = null
+        tooltip.innerHTML = ''
         tooltip.style.display = 'none'
       }
     })
@@ -237,13 +270,13 @@ input[type='submit'] {
   /* filter: opacity(50%); */
 }
 
-#tooltip
-{
-  position:absolute;
-  background:white;
-  z-Index:1000;
-  padding:5px;
-  border-radius:5px;
+#tooltip {
+  white-space: nowrap;
+  position: absolute;
+  background: white;
+  z-Index: 2000;
+  padding: 5px;
+  border-radius: 15px;
   border: 1px solid grey;
 }
 </style>
