@@ -6,5 +6,44 @@ html, body {
   height: 100%;
 }
 
+form {
+  display: flex;
+  align-items: stretch;
+}
+
+.v-select {
+  width: 75%;
+}
+
+input[type='submit'] {
+  margin-left: auto;
+  background: #44ae7d;
+  border: none;
+  border-radius: 3px;
+  color: #fff;
+  width: 20%;
+}
+
+.map {
+  height: 500px;
+  padding-top: 1.5rem;
+  width: 100%;
+}
+
+.bw {
+  filter: grayscale(75%);
+  /* filter: opacity(50%); */
+}
+
+#tooltip {
+  white-space: nowrap;
+  position: absolute;
+  background: white;
+  z-Index: 2000;
+  padding: 5px;
+  border-radius: 15px;
+  border: 1px solid grey;
+}
+
 @require "~ol/ol.css";
 @require '~vue-select/dist/vue-select.css'
