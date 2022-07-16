@@ -11,6 +11,11 @@ Input box format filter (pure number or AS[number])
   <input type="submit" value="Plot"/>
 </form>
 <div ref="map" class="map">
+<div id="asn_tip"></div>
 </div>
 </div>
 </template>
+
+
+<script>
+</script>

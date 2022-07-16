@@ -1,8 +1,5 @@
 <!-- TODO:
-Show color legend labels (bad readability, cancelled)
-Select / highlight path and show label (99% done)
 Click & Keep (Pin Path)
-'Plotting...' text while fetching JSON
 Customizing color (really?)
 Toggle PoP display -->
 
@@ -19,7 +16,7 @@ Toggle PoP display -->
       />
     </template>
   </v-select>
-  <input type="submit" value="Plot"/>
+  <input type="submit" :value="plotText"/>
 </form>
 
 <div ref="map" class="map">
@@ -88,10 +85,12 @@ export default {
     vectorLayer: null,
     highlightedOrg: null,
     overlay: null,
+    plotText: 'Plot',
   }),
 
   methods: {
     async onSubmit() {
+      this.plotText = 'Plotting...'
       let index = 0
       const vectorSource = new VectorSource({})
       for (const element of this.selectedIsp) {
@@ -111,6 +110,7 @@ export default {
         index++
       }
       this.vectorLayer.setSource(vectorSource)
+      this.plotText = 'Plot'
     },
   },
 
