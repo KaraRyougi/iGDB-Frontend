@@ -1,5 +1,5 @@
 <!-- TODO:
-Click & Keep (Pin Path)
+Click & Pin
 Toggle PoP display (?) 
 CIS NEPHAX?
 -->

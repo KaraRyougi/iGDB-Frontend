@@ -12,8 +12,8 @@ Plot PoPs
 <form @submit.prevent="onSubmit">
   <v-select
   label="asn"
-  multiple
   v-model="selectedASN"
+  multiple
   :filterable="false"
   :options="options" 
   @search="onSearch"
@@ -38,6 +38,7 @@ Plot PoPs
   </v-select>
   <input type="submit" :value="plotText"/>
 </form>
+
 <div ref="map" class="map">
   <div id="asn_marks"></div>
 </div>
@@ -60,21 +61,26 @@ export default {
   
   data: () => ({
     map: null,
-    vectorLayer: null,
+    vectorLayer: new VectorLayer(),
     overlay: null,
     plotText: 'Plot',
-    selectedASN: null,
     clearSearch: false,
     options: [],
+    selectedASN: null,
   }),
 
   methods: {
-    onSubmit() {
+    async onSubmit() {
       this.clearSearch = true
       this.plotText = 'Plotting...'
       let index = 0
       const vectorSource = new VectorSource({})
-      // for (const element of this.selectedASN) {
+      for (const element of this.selectedASN) {
+        fetch(
+          `http://localhost:8080/asn_geo?asn=${element.asn}`
+        ).then(res =>
+          res.json().then(json => (json.data))
+        )
       //   let orgNames = null
       //   let pops = null
       //   const selection = element.asn
@@ -87,17 +93,21 @@ export default {
       //     console.error(ex)
       //   }
       //   console.log(pops)
-      // }
+      }
       // this.vectorLayer.setSource(vectorSource)
       this.plotText = 'Plot'
       this.clearSearch = false
     },
     onSearch(query, loading) {
-      if(query.length > 2) {
+      if(Number.isInteger(parseInt(query))) {
+        loading(true)
+        this.debouncedSearchASN(query, loading, this)
+      } else if(query.length > 2) {
         loading(true)
         this.debouncedSearchOrg(query, loading, this)
       }
     },
+
     debouncedSearchOrg: _.debounce((query, loading, vm) => {
       fetch(
         `http://localhost:8080/asn_search?org=${query}`
@@ -106,14 +116,18 @@ export default {
       )
       loading(false)
     }, 350),
-    debouncedSearchASN(query, loading) {
 
-    }
+    debouncedSearchASN: _.debounce((query, loading, vm) => {
+      fetch(
+        `http://localhost:8080/asn_org?asn=${query}`
+      ).then(res =>
+        res.json().then(json => (vm.options = json.data.slice(0, 100)))
+      )
+      loading(false)
+    }, 350),
   },
 
   mounted() {
-    this.clearSearch = false
-    this.vectorLayer = new VectorLayer()
     this.overlay = new Overlay({
       element: asn_marks,
       offset: [10, 0],
