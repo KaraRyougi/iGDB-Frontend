@@ -34,8 +34,9 @@ export default {
     } else if (url.pathname == '/asn_search') {
       jsonObject['request_name'] = 'asn_search'
       jsonObject['request_param'] = url.searchParams.get('org')
-      result = db.query("SELECT * FROM 'asn_org' WHERE organization LIKE $query").all({
-        $query: '%' + url.searchParams.get('org') + '%',
+      result = db.query("SELECT * FROM 'asn_org' WHERE organization LIKE $query_1 OR organization LIKE $query_2").all({
+        $query_1: '% ' + url.searchParams.get('org') + '%',
+        $query_2: url.searchParams.get('org') + '%'
       })
     } else {
       jsonObject['request_name'] = 'unknown'
@@ -54,8 +55,5 @@ export default {
 // /asn_search?org=google
 
 // time: "2022-07-17T18:39:30.839140"
-// status: "ok"
-// status_code: 200
-// data_call_name: "asn_org"
-// data_call_id: "46997"
+// total_count:
 // data: 
