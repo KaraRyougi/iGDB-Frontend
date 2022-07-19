@@ -1,7 +1,6 @@
 <!-- TODO:
 Click & Keep (Pin Path)
-Customizing color (really?)
-Toggle PoP display -->
+Toggle PoP display (?) -->
 
 <template>
 <div>

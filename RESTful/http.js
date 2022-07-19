@@ -8,51 +8,54 @@ export default {
     const url = new URL(req.url)
     const asn = url.searchParams.get('asn')
     const headers = new Headers({'content-type': 'application/json'})
-    var body = ''
-    
-//     if (asn is not a number) {
-//       return new Response({})
-//     }
-    
-    if (url.pathname == '/asn_org') {
-      const asn_org = db.query("SELECT * FROM 'asn_org' WHERE asn=$asn").all({
-        $asn: asn,
-      })
-      body = JSON.stringify(asn_org)
-    } else if (url.pathname == '/asn_geo') {
-      const asn_geo = db.query("SELECT * FROM 'asn_loc' WHERE asn=$asn").all({
-        $asn: asn,
-      })
-      body = JSON.stringify(asn_geo)
-//     } else {
-//       return new Response({})
+    var result = ''
+    var jsonObject = { 
+      'data': '',
+      'request_name': '',
+      'request_param': '',
+      'request_time': '',
     }
+
+    if (asn && !Number.isInteger(parseInt(asn))) {
+      jsonObject['request_name'] = 'error'
+      jsonObject['request_param'] = 'asn must be an integer'
+    } else if (url.pathname == '/asn_org') {
+      jsonObject['request_name'] = 'asn_org'
+      jsonObject['request_param'] = asn
+      result = db.query("SELECT * FROM 'asn_org' WHERE asn=$asn").all({
+        $asn: asn,
+      })
+    } else if (url.pathname == '/asn_geo') {
+      jsonObject['request_name'] = 'asn_geo'
+      jsonObject['request_param'] = asn
+      result = db.query("SELECT * FROM 'asn_loc' WHERE asn=$asn").all({
+        $asn: asn,
+      })
+    } else if (url.pathname == '/asn_search') {
+      jsonObject['request_name'] = 'asn_search'
+      jsonObject['request_param'] = url.searchParams.get('org')
+      result = db.query("SELECT * FROM 'asn_org' WHERE organization LIKE $query").all({
+        $query: '%' + url.searchParams.get('org') + '%',
+      })
+    } else {
+      jsonObject['request_name'] = 'unknown'
+      jsonObject['request_param'] = ''
+    }
+
+    jsonObject['data'] = result
+    jsonObject['request_time'] = new Date().toISOString()
+    var body = JSON.stringify(jsonObject)
     return new Response(body, { headers, status: 200 })
   }
 }
 
-// 
 // /asn_org?asn=46997
 // /asn_geo?asn=46997
-// 
-// 
-// {
-// "asn":
-// "data": [
-//   {
-//     "source": [
-//       "RIPEAtlas",
-//       "PeeringDB",
-//     ]
-//     "location": {
-//       "city":"",
-//       "state":"",
-//       "country_code":"",
-//       "coordinate": {
-//         "latitude":"",
-//         "longitude":""
-//       }
-//     },
-//     "last_update":"",
-//   },
-// ]}
+// /asn_search?org=google
+
+// time: "2022-07-17T18:39:30.839140"
+// status: "ok"
+// status_code: 200
+// data_call_name: "asn_org"
+// data_call_id: "46997"
+// data: 
