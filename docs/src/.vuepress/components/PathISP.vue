@@ -5,7 +5,14 @@ Toggle PoP display (?) -->
 <template>
 <div>
 <form @submit.prevent="onSubmit">
-  <v-select label="corpName" :options="isp" v-model="selectedIsp" multiple>
+  <v-select
+  label="corpName" 
+  :options="isp"
+  v-model="selectedIsp"
+  multiple
+  :closeOnSelect="false"
+  :clearSearchOnSelect="false"
+  :clearSearchOnBlur="(clearSearch) => {return clearSearch}">
     <template #search="{ attributes, events }">
       <input
         :required="!selectedIsp"
@@ -85,10 +92,12 @@ export default {
     highlightedOrg: null,
     overlay: null,
     plotText: 'Plot',
+    clearSearch: false,
   }),
 
   methods: {
     async onSubmit() {
+      this.clearSearch = true
       this.plotText = 'Plotting...'
       let index = 0
       const vectorSource = new VectorSource({})
@@ -110,10 +119,12 @@ export default {
       }
       this.vectorLayer.setSource(vectorSource)
       this.plotText = 'Plot'
+      this.clearSearch = false
     },
   },
 
   mounted() {
+    this.clearSearch = false
     this.highlightedOrg = null
     this.vectorLayer = new VectorLayer()
     this.overlay = new Overlay({

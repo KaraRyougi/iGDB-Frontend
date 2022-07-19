@@ -14,5 +14,12 @@ module.exports = {
       global: true,
       process: true
     },
+  },
+  devServer: {
+    proxy: {
+      '/asn_org' : 'http://127.0.0.1:3000',
+      '/asn_geo' : 'http://127.0.0.1:3000',
+      '/asn_search' : 'http://127.0.0.1:3000',
+    }
   }
 }

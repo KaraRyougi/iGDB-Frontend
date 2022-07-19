@@ -1,12 +1,14 @@
 <!-- TODOO:
-Input box format filter (pure number or AS[number])
-Plot PoP for the input
+Input box search for org name / as number
+Multi select
+Request locations
+Plot PoPs
  -->
 
 <template>
 <div>
 <form @submit.prevent="onSubmit">
-  <v-select label="asn" taggable multiple v-model="selectedASN" :dropdown-should-open="_=>{return false}" :options=[]>
+  <v-select label="asn" multiple v-model="selectedASN" :options="options" @search="onSearch" :closeOnSelect="false" :clearSearchOnSelect="false">
   </v-select>
   <input type="submit" :value="plotText"/>
 </form>
@@ -44,16 +46,17 @@ export default {
       const vectorSource = new VectorSource({})
       for (const element of this.selectedASN) {
         let orgNames = null
-        let PoPs = null
+        let pops = null
         const selection = element.asn
         try {
-          var response = await fetch(`http://localhost:3000/asn_org?asn=${selection}`)
+          var response = await fetch(`http://localhost:8080/asn_org?asn=${selection}`)
           orgNames = await response.json()
-          response = await fetch(`http://localhost:3000/asn_geo?asn=${selection}`)
-          PoPs = await response.json()
+          response = await fetch(`http://localhost:8080/asn_geo?asn=${selection}`)
+          pops = await response.json()
         } catch (ex) {
           console.error(ex)
         }
+        console.log(pops)
       }
       // this.vectorLayer.setSource(vectorSource)
       this.plotText = 'Plot'
