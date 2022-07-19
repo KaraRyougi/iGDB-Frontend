@@ -34,7 +34,7 @@ export default {
     } else if (url.pathname == '/asn_search') {
       jsonObject['request_name'] = 'asn_search'
       jsonObject['request_param'] = url.searchParams.get('org')
-      result = db.query("SELECT * FROM 'asn_org' WHERE organization LIKE $query_1 OR organization LIKE $query_2").all({
+      result = db.query("SELECT * FROM 'asn_org' WHERE source == 'PeeringDB' AND (organization LIKE $query_1 OR organization LIKE $query_2)").all({
         $query_1: '% ' + url.searchParams.get('org') + '%',
         $query_2: url.searchParams.get('org') + '%'
       })
