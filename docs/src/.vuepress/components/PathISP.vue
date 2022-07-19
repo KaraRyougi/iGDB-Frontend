@@ -124,6 +124,9 @@ export default {
   },
 
   mounted() {
+    var standardWidth = 1.5
+    var highlightedWidth = 3
+    var clicked = false
     this.clearSearch = false
     this.highlightedOrg = null
     this.vectorLayer = new VectorLayer()
@@ -180,7 +183,7 @@ export default {
                 const newStyle = new Style({
                   stroke: new Stroke({
                     color: newColor,
-                    width: 1.5,
+                    width: standardWidth,
                   }),
                   zIndex: 0,
                 })
@@ -191,7 +194,7 @@ export default {
                 const newStyle = new Style({
                   stroke: new Stroke({
                     color: newColor,
-                    width: 2.5,
+                    width: highlightedWidth,
                   }),
                   zIndex: 1000,
                 })
@@ -208,7 +211,7 @@ export default {
               const newStyle = new Style({
                 stroke: new Stroke({
                   color: newColor,
-                  width: 2.5,
+                  width: highlightedWidth,
                 }),
                 zIndex: 1000,
               })
@@ -230,7 +233,7 @@ export default {
               const newStyle = new Style({
                 stroke: new Stroke({
                   color: newColor,
-                  width: 1.5,
+                  width: standardWidth,
                 }),
                 zIndex: 0,
               })
