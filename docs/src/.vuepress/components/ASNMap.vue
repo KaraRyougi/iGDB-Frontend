@@ -1,6 +1,8 @@
 <!-- TODOO:
 Input box search for org name / as number
-Pagination
+Pagination? Or simply limit the max number?
+Multiple sources of org name what to do?
+Get rid of duplication?
 Toggle different sources
 Plot PoPs
  -->
@@ -25,8 +27,10 @@ Plot PoPs
       type to begin search...
     </template>
     <template slot="option" slot-scope="option">
-      <div>AS{{ option.asn }} </div>
-      <div>{{ option.organization }}</div>
+      <div>
+        <div><b>{{ option.organization }}</b></div>
+        <div>{{ option.asn }}</div>
+      </div>
     </template>
     <template slot="selected-option" slot-scope="option">
       <div>AS{{ option.asn }}</div>
@@ -98,7 +102,7 @@ export default {
       fetch(
         `http://localhost:8080/asn_search?org=${query}`
       ).then(res =>
-        res.json().then(json => (vm.options = json.data))
+        res.json().then(json => (vm.options = json.data.slice(0, 100)))
       )
       loading(false)
     }, 350),

@@ -1,3 +1,3 @@
-Search for ISP name to view physical paths between its PoPs.
+Search for ISP names to view physical paths between its PoPs.
 
 <PathISP />
